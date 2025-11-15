@@ -426,4 +426,181 @@ In this lab, you learned how to:
 2. Create and manage Pods.
 3. Deploy and scale applications.
 4. Expose Deployments as services.
+
 5. Clean up resources safely.
+
+
+
+exp4
+
+
+STEP 1 – Create project folder
+Create a folder named: python-ci-docker-lab
+
+STEP 2 – Create files
+Inside the folder create these files and folders:
+
+app.py
+requirements.txt
+Dockerfile
+.gitignore
+
+tests/test_app.py
+
+.github/workflows/ci-dockerhub.yml
+
+STEP 3 – Add content in files
+
+app.py
+
+def add(a, b):
+    return a + b
+
+if __name__ == "__main__":
+    print(add(3, 5))
+
+
+tests/test_app.py
+
+from app import add
+
+def test_add():
+    assert add(2, 3) == 5
+
+
+requirements.txt
+
+pytest
+
+
+Dockerfile
+
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]
+
+
+.gitignore
+
+__pycache__/
+*.pyc
+
+
+.github/workflows/ci-dockerhub.yml
+
+name: CI Pipeline - DockerHub
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - run: pip install -r requirements.txt
+    - run: pip install pytest
+    - run: pytest
+
+    - uses: docker/setup-buildx-action@v3
+      
+    - uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/python-ci-lab:latest
+
+
+PROCESS
+
+Create GitHub repository.
+
+Open terminal in your project folder.
+
+Run:
+
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/yourname/python-ci-docker-lab.git
+git push -u origin main
+
+
+Login to DockerHub.
+
+Go to Account Settings.
+
+Go to Security.
+
+Click New Access Token.
+
+Give name.
+
+Select read, write, delete.
+
+Generate token.
+
+Copy token.
+
+Go to GitHub → Your Repository.
+
+Go to Settings.
+
+Go to Secrets and variables.
+
+Click Actions.
+
+Click New repository secret.
+
+Add secret name: DOCKERHUB_USERNAME
+
+Add value: your-dockerhub-username
+
+Save.
+
+Click New repository secret again.
+
+Add name: DOCKERHUB_TOKEN
+
+Add value: the token you copied
+
+Save.
+
+Push any code to GitHub again:
+
+git add .
+git commit -m "update"
+git push
+
+
+Go to GitHub → Actions.
+
+Pipeline will run automatically.
+
+It installs dependencies.
+
+Runs pytest.
+
+Builds Docker image.
+
+Pushes image to DockerHub.
+
+Go to DockerHub repository.
+
+You will see image: yourusername/python-ci-lab:latest

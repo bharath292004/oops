@@ -432,6 +432,19 @@ In this lab, you learned how to:
 
 
 exp4
+python-ci-docker-lab/
+│
+├── app.py
+├── requirements.txt
+├── Dockerfile
+├── .gitignore
+│
+├── tests/
+│   └── test_app.py
+│
+└── .github/
+    └── workflows/
+        └── ci-dockerhub.yml
 
 
 STEP 1 – Create project folder
@@ -604,3 +617,4 @@ Pushes image to DockerHub.
 Go to DockerHub repository.
 
 You will see image: yourusername/python-ci-lab:latest
+

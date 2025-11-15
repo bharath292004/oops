@@ -618,3 +618,126 @@ Go to DockerHub repository.
 
 You will see image: yourusername/python-ci-lab:latest
 
+
+
+exp5
+
+
+
+Create project folder
+
+mkdir jenkins-static-site
+cd jenkins-static-site
+
+
+STEP 2
+Create docker-compose.yml
+
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./jenkins-config:/usr/share/jenkins/ref
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins_home:
+    driver: local
+
+
+STEP 3
+Start Jenkins container
+
+docker compose up -d
+
+
+STEP 4
+Get Jenkins initial admin password
+
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+
+
+STEP 5
+If any error comes
+
+docker compose down
+docker compose up -d
+
+
+STEP 6
+Open browser
+
+http://localhost:8080
+
+
+STEP 7
+Enter initial admin password
+Create admin user
+
+STEP 8
+Select plugins
+Install plugin: HTML Publisher Plugin
+
+STEP 9
+Create Pipeline job
+Choose "Pipeline"
+Scroll down → Pipeline Script section
+
+STEP 10
+Paste this Jenkinsfile script:
+
+pipeline {
+  agent any
+
+  stages {
+    stage('Generate site') {
+      steps {
+        script {
+          sh 'rm -rf site || true'
+          sh 'mkdir -p site'
+          writeFile file: 'site/index.html', text: """<html><body><h1>Hello World</h1></body></html>"""
+        }
+      }
+    }
+
+    stage('Publish site') {
+      steps {
+        publishHTML([
+          allowMissing: false,
+          alwaysLinkToLastBuild: true,
+          keepAll: true,
+          reportDir: 'site',
+          reportFiles: 'index.html',
+          reportName: 'Hello World - Simple Site'
+        ])
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'site/', fingerprint: true
+    }
+  }
+}
+
+
+STEP 11
+Save job
+Click “Build Now”
+Jenkins will create “site/index.html”
+
+STEP 12
+View published site
+In Jenkins → Build → HTML Reports
+Click “Hello World – Simple Site”
+
+
